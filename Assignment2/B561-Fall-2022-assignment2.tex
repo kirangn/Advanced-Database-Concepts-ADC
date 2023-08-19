@@ -1,0 +1,1021 @@
+\documentclass[11pt]{article}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{color}
+
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\green}[1]{{\color{green}#1}}
+\newcommand{\blue}[1]{{\color{blue}#1}}
+\newcommand{\SFW}[3]{{\color{blue}}}
+
+\newcommand{\redbullet}{$\red{\bullet}$}
+\newcommand{\greenbullet}{$\green{\bullet}$}
+\newcommand{\bluebullet}{$\blue{\bullet}$}
+
+\newtheorem{example}{Example}
+
+\begin{document}
+
+\title{B561 Advanced Database Concepts \\Assignment 2 \\Fall 2022}
+\author{Dirk Van Gucht}
+\date{}
+\maketitle
+
+This {assignment} relies on the lectures
+\begin{itemize}
+
+\item SQL Part 1 and SQL Part 2 (Pure SQL);
+\item Tuple Relational Calculus;
+\item Views;
+\item Relational Algebra (RA);  and 
+\item Joins and semijoins. 
+\end{itemize}
+COLLABORATED WITH Aditi Soni ,Yash Shah
+
+To turn in your assignment, you will need to upload to Canvas 3 files:
+\begin{enumerate}
+\item A file with name {\tt assignment2.sql} which contains 
+the necessary SQL statements that solve the problems in this assignment.   
+The {\tt assignment2.sql} file must be so that the AI's can run it in their PostgreSQL environment.  You should use the {\tt Assignment2Script.sql} file to construct the {\tt assignment2.sql} file. (Note that the data to be used for this assignment is included in this file.)
+\item A file with name {\tt assignment2.txt} file that contains the results of running the SQL code in the {\tt assignment2.sql} code.
+\item A file with name {\tt assignment2.pdf} that contains the solutions to the problems that require it. You are strongly advised to use Latex to construct this file
+\end{enumerate}
+
+
+The problems that need to be included in the {\tt assignment2.sql} are marked with a blue bullet \bluebullet.
+The problems that need to be included in the {\tt assignment2.pdf} are marked with a green bullet \greenbullet.
+Problems that are marked with a red bullet \redbullet\  are practice problems and they should not be included in the 3 files you need to submit.
+
+
+
+\newpage
+\noindent
+\large{\bf Database schema and instances}
+\bigskip
+
+
+
+
+For the problems in this assignment we will use the following database schema:\footnote{The primary key, which may consist of one or more attributes, of each of these relations is underlined.}
+
+\begin{center}
+{\tt
+  \begin{tabular}{l}
+  {Student}($\underline{\tt sid}$, sname, birthYear) \\
+  {Book}($\underline{\tt bno}, {\tt title}, {\tt price}$) \\
+  {Buys}($\underline{\tt sid, bno}$) \\
+  {Major}($\underline{\tt major}$) \\
+  {hasMajor}($\underline{\tt sid, major}$) \\
+  {Cites}($\underline{\tt bno1, bno2}$) \\
+   \end{tabular}
+  }
+\end{center}
+
+In this database we maintain a set of students ({\tt Student}), a set
+of books ({\tt Book}), and a set of majors ({\tt Major}). 
+The {\tt sname} attribute in {\tt Student} is the name of the student.  
+The {\tt birthYear} attribute in {\tt Student} specifies the birth year of the student.
+The {\tt bno} attribute in {\tt Book} is the book number of the book.\footnote{You should think of
+{\tt bno} as the {\tt ISBN} number of a book.   Notice that different physical books may have the same
+ISBN number.}
+The {\tt title} attribute in {\tt Book} is the title of the book.
+The {\tt price} attribute in {\tt Book} is the price for the book.
+The {\tt major} attribute in {\tt Major} is the name of a major.
+
+A  student can buy books. This information is maintained in the {\tt Buys} relation. A triple $(s,b)$ indicates that the student with sid $s$ buys the book with bno $b$. We permit that a student buys multiple books and that a book is bought by multiple students.   It is possible that a student buys no books and that a book is bought by no students.    
+
+A  student can have multiple majors. This information is maintained in the {\tt hasMajor} relation.  A student can have multiple majors and
+a major can have multiple students.  It is possible that a student has no major and that a major has no students.
+
+A book can cite other books.   This information is maintained in the {\tt Cites} relation.  A pair $(b_1,b_2)$ in {\tt Cites} indicates that the book with bno $b_1$ cites the book with bno $b_2$.
+We permit that a book cites multiple books and that a book is cited by multiple books.
+It is possible that a book cites no other books and that a book is not cited by any book.   
+The domain for the attributes {\tt sid}, {\tt bno}, {\tt bno1}, {\tt bno2}, {\tt birthYear}, and {\tt price} is {\tt integer}.   The domain for all other attributes is {\tt text}.
+
+The primary keys in the relations are the respective underlined attributes.
+
+We assume the following foreign key constraints:
+\begin{itemize}
+\item {\tt sid} is a foreign key in {\tt Buys} referencing the primary key {\tt sid} in {\tt Student};
+\item {\tt bno} is a foreign key in {\tt Buys} referencing the primary key {\tt bno} in {\tt Book};
+\item {\tt sid} is a foreign key in {\tt hasMajor} referencing the primary key {\tt sid} in {\tt Student};
+\item {\tt major} is a foreign key in {\tt hasMajor} referencing the primary key {\tt major} in {\tt Major};
+\item {\tt bno1} is a foreign key in {\tt Cites} referencing the primary key {\tt bno} in {\tt Book}; and
+\item {\tt bno2} is a foreign key in {\tt Cites} referencing the primary key {\tt bno} in {\tt Book}.
+\end{itemize}
+
+We assume that a book can not recursively cite itself.   In other words, the {\tt Cites} relation is an acylic directed graph.   I.e., there are no cycles in the {\tt Cites graph}.
+\newpage
+
+\noindent
+\large{\bf Pure SQL and RA SQL}
+
+\bigskip
+In this assignemt, we distinguish between Pure SQL\footnote{Pure SQL is the fragment of SQL that was covered in the lectures up to but not including the lectures about relational algebra.} and RA SQL.
+Below we list the {\bf only} features that are allowed in Pure SQL and in RA SQL. 
+
+In particular notice that 
+\begin{itemize}
+\item `{\tt join}', `{\tt natural~join}', and `{\tt cross~join}' are {\bf not} allowed in Pure SQL.
+\item The subquery expressions `{\tt some}', `{\tt all}', [`{\tt not}']~``{\tt exists}'', [`{\tt not}']~`{\tt exists}' are {\bf not} allowed in RA SQL.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{c}
+{\bf The only features allowed in Pure SQL} \\ \hline
+\begin{tabular}{l}
+{\tt select ... from ... where}\\
+{\tt with ...} \\
+{\tt union, intersect, except} operations \\
+`{\tt some}' and `{\tt all}' subquery expressions \\
+`{\tt exists}' and `{\tt not exists}' subquery expressions \\
+`{\tt in}' and {\tt not in} subquery expressions \\
+`{\tt view}'s that can only use the above Pure SQL features
+\end{tabular} \\
+ \\
+{\bf The only features allowed in RA SQL} \\ \hline 
+\begin{tabular}{l}
+{\tt select ... from ... where}\\
+{\tt with ...} \\
+{\tt union, intersect, except} operations\\
+{\tt join ... on ...}, {\tt natural join}, and {\tt cross join} operations \\
+`{\tt view}'s that can only use the above RA SQL features\\ 
+commas in the {\tt from} clause are {\bf not} allowed \\
+\end{tabular} \\
+\end{tabular}
+\end{center}
+
+\newpage
+
+\section{Translating SQL queries with query predicates and subquery expressions into safe TRC}
+\label{TranslateSQL}
+
+We have learned that safe TRC is at the core of the design of SQL.
+For the problems in the section, you are asked to translate SQL queries into equivalent safe TRC queries. To illustrate what you need to do, consider the following example:
+
+\begin{example}
+\label{TranslatedSQLtoSafeTRC}
+Consider the query `\emph{Find each $(s,b)$ pair where $s$ is the
+sid of a student who bought book $b$ and such that each other book, with price above \$30, that was bought by $s$ is a book cited by $b$}.'
+
+
+This query can be expressed in SQL as
+{\small
+\begin{verbatim}
+select t.sid, t.bno
+from   Buys t
+where  true = all (select (t.bno, b.bno) in (select c.bno1, c.bno2
+                                             from   Cites c)
+                   from   Book b
+                   where  b.bno != t.bno and 
+                          b.price >= 30 and
+                          (t.sid, b.bno) in (select t1.sid, t1.bno
+                                             from   Buys t1));
+\end{verbatim}
+}
+                                                                
+Starting from this SQL query, we obtain the safe TRC query
+
+{\small
+\[
+\begin{array}{l}
+\{(t.sid,t.bno)\mid Buys(t) \land \\
+\qquad \forall b\left((Book(b)\land b.bno \neq t.bno\land b.price \geq 35 \land Buys(t.sid, b.bno))\rightarrow Cites(t.bno,b.bno)\right)\}
+\end{array}
+\]  }                                                              
+%
+
+Using logical equivalences, this query can also be expressed as the SQL query
+{\small
+\begin{verbatim}
+select t.sid, t.bno
+from   Buys t
+where  not exists (select 1
+                   from   Book b
+                   where  b.bno != t.bno and 
+                          b.price >= 30 and
+                          (t.sid, b.bno) in (select t1.sid, t1.bno
+                                             from   Buys t1) and
+                          (t.bno, b.bno) not in (select c.bno1, c.bno2
+                                                 from   Cites c));
+\end{verbatim}
+}
+  
+Starting from this SQL query, we obtain the safe TRC query
+{\small
+\[
+\begin{array}{l}
+\{(t.sid,t.bno)\mid Buys(t) \land \\
+\qquad \lnot \exists b\in Book \left(b.bno \neq t.bno\land b.price \geq 35 \land Buys(t.sid, b.bno)\land \lnot Cites(t.bno,b.bno)\right)\}
+\end{array}
+\]  }                                                              
+
+\end{example}
+
+We now turn to the problems for this section.
+
+\begin{enumerate}
+\item\label{queryOne} \greenbullet\  Consider the query `\emph{Find the bno and title of each book that was bought by exactly one student}.'   This query can be expressed as the SQL query
+
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b
+where  true = some  (select (s.sid, b.bno) in (select t.sid, t.bno
+	                                               from   Buys t)
+
+                     from   Student s) and
+       true = all (select s1 = s2
+                   from   Student s1, Student s2
+                   where  (s1.sid, b.bno) in (select t.sid, t.bno from Buys t) and
+                          (s2.sid, b.bno) in (select t.sid, t.bno from Buys t));
+                        
+                          
+\end{verbatim}
+}
+
+Starting from this SQL query, express the query in safe TRC.\\
+Answer: \\
+{\large
+\[
+\begin{array}{l}
+\{(t.sid,t.bno)\mid Buys(t) \land \\
+ \exists S \in (Student(S) \land Buys(t) \land S.sid=t.sid \land b.bno=t.bno)\land\\
+ \forall (S1,S2 (Student(S1)\land Student(S2)) \in Buys(t)(t.sid=S1.sid \land S2.sid=t.sid \land t.bno=b.bno)\\ \land S1=S2)
+ \}
+\end{array}
+\]}
+
+
+\item\label{queryTwo} \greenbullet\   
+Consider the query `\emph{Find each pair $(m, b)$
+where $m$ is a major and $b$ is the bno of a book bought by a student who has major $m$ and such that the price of $b$ is the lowest among the set of books bought by students with major $m$}.' 
+
+
+
+{\footnotesize
+\begin{verbatim}
+select m.major, b.bno
+from   Major m, Book b
+where  b.bno in (select t.bno
+                 from   Buys t
+                 where  t.sid in (select hm.sid
+                                  from   hasMajor hm
+                                  where  hm.major = m.major)) and
+       not exists (select 1
+                   from   Buys t, Book b1
+                   where  t.bno = b1.bno and
+                          true = some (select (t.sid,m.major) in (select hm.sid, hm.major 
+                                                                  from   hasMajor hm)) and
+                          b1.price < b.price);
+\end{verbatim}
+}
+
+Starting from this SQL query, express the query in safe TRC. \\
+
+Answer:
+
+{\large
+\[
+\begin{array}{l}
+\{(m.major,b.bno)\mid Major(m) \land Book(b) \land\\
+ \exists t  (Buys(t) \land b.bno=b.bno) \land \exists hm(hasMajor(hm) \land t.sid=hm.sid) \land \\
+ \lnot (\exists t \in Buys \exists b1 \in Book(t.bno=b1.bno) \land \exists hm \in hasmajor(t.sid,m.major)\land\\
+ b1.price >b.price)
+ \}
+\end{array}
+\]}
+
+\end{enumerate}
+
+
+\section{Expressing queries in (Extended) Safe TRC and
+Pure SQL with and without subquery expressions}
+\label{PureSQL}
+
+An important consideration in expressing queries is knowing how they can be written in different, but equivalent, ways. In fact, this is an aspect of programming in general and, as can expected, is also true for database programming languages such as SQL.   A learning outcome of this course
+is to acquire skills for writing queries in different ways.    One of the main motivations for this is to learn that different formulations of the same query can dramatically impact performance, sometimes by orders of magnitude.    
+
+
+For the problems in this section, you will need to express  queries in {Pure SQL} with and without subquery expressions.
+You can use the SQL operators {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}, unless otherwise specified.
+You are allowed to use views including temporary and user-defined views.
+
+To illustrate what you need to do for the problems in this section, consider the following example.
+\begin{example}
+\label{queriesWithSubexpressions}
+Consider the query `\emph{Find the bno and title of each book that cites a book and that was bought by a student who majors in CS or in Math}.'
+
+\begin{description}
+\item[(a)] Express this query in Safe TRC (i.e, with quantifiers `$\exists$' or `$\forall$').
+{\small
+\[
+\begin{array}{l}
+\{(b.bno,b.title)\mid Book(b)\land \exists c (Cites(c) \land c.bno1 = b.bno) \land \\
+\quad \exists t(Buys(t)\land t.bno = b.bno\land \\
+\quad\quad \exists hm(hasMajor(hm)\land hm.sid = t.sid \land 
+                                               (hm.major = \mathbf{CS} \lor hm.major = \mathbf{Math})))\}
+\end{array}
+\]
+}
+\item[(b)] Express this query in Extended Safe TRC (i.e, with subquery expressions).
+{\small
+\[
+\begin{array}{l}
+\{(b.bno,b.title)\mid Book(b)\land \mathtt{some}(\{c.bno1 = b.bno \mid Cites(c)\}) \land \\
+\quad \mathtt{some}(\{t.bno = b.bno\mid Buys(t)\land \\
+\quad\quad \mathtt{some}(\{hm.sid = t.sid \land (hm.major = \mathbf{CS} \lor hm.major = \mathbf{Math})\mid hasMajor(hm)\})\})\}
+\end{array}
+\]
+}
+
+Or, alternatively
+{\small
+\[
+\begin{array}{l}
+\{(b.bno,b.title)\mid Book(b)\land \mathtt{some}(\{c.bno1 = b.bno \mid Cites(c)\}) \land \\
+\quad \mathtt{some}(\{t.bno = b.bno \land \mathtt{some}(\{hm.sid = t.sid \land \\
+\quad\quad (hm.major = \mathbf{CS} \lor hm.major = \mathbf{Math})\mid hasMajor(hm)\}) \mid Buys(t)\})\}
+\end{array}
+\]
+}
+
+
+\item[(c)] Express this query in Pure SQL by only using the `{\tt true = some}' or `{\tt true = all}' subquery expressions.
+
+A possible solution is
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b
+where  true = some (select c.bno1 = b.bno
+                    from   Cites c) and
+       true = some (select t.bno = b.bno and
+                    from   Buys t
+                    where  true = some (select hm.sid = t.sid and 
+                                               (hm.major = 'CS' or hm.major = 'Math')
+                                        from   hasMajor hm);
+\end{verbatim}
+}
+
+Or, alternatively
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b
+where  true = some (select c.bno1 = b.bno
+                    from   Cites c) and
+       true = some (select t.bno = b.bno and 
+                         true = some (select hm.sid = t.sid and 
+                                             (hm.major = 'CS' or hm.major = 'Math')
+                                      from   hasMajor hm)
+                    from   Buys t);
+                    
+\end{verbatim}
+}
+
+
+\item[(d)] Express this query in Pure SQL by only using the `{\tt exists}' or `{\tt not exists}' subquery expressions.
+
+A possible solution is 
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b
+where  exists (select 1
+               from   Cites c
+               where  c.bno1 = b.bno) and 
+       exists (select 1
+               from   Buys t
+               where  t.bno = b.bno and
+                      exists (select 1
+                              from   hasMajor hm
+                              where  hm.sid = t.sid and 
+                                     (hm.major = 'CS' or hm.major = 'Math')));
+\end{verbatim}
+}
+
+\item[(e)]   Express this query in Pure SQL by only using the `{\tt in}' or `{\tt not in}' subquery expressions.
+You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+
+A possible solution is
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b
+where  b.bno in (select c.bno1
+                 from   Cites c) and
+       b.bno in (select t.bno
+                 from   Buys t
+                 where  t.sid in (select hm.sid 
+                                  from   hasMajor hm
+                                  where  hm.major = 'CS' or hm.major = 'Math'));
+\end{verbatim}
+}
+
+
+\item[(f)]   Express this query in Pure SQL without using subquery expressions. 
+
+A possible solution is
+{\footnotesize
+\begin{verbatim}
+select b.bno, b.title
+from   Book b, Cites c
+where  b.bno = c.bno1
+intersect
+select b.bno, b.title
+from   Book b, Buys t, hasMajor hm
+where  b.bno = t.bno and
+       t.sid = hm.sid and
+      (hm.major = 'CS' or hm.major = 'Math');
+\end{verbatim}}
+
+\end{description}
+\end{example}
+
+
+\newpage
+We now turn to the problems for this section.
+\begin{enumerate}[resume]
+
+\item \label{queryThree} Consider the query `\emph{Find the bno and title of each book that is bought by a student who
+is (strictly) younger than each student who majors in Chemistry and
+who also bought that book.}'
+
+    \begin{enumerate}
+    \item \greenbullet\  Express this query in Safe TRC (i.e, with quantifiers `$\exists$' or `$\forall$').
+   
+    Answer:
+    {\large
+\[
+\begin{array}{l}
+\{(b.bno,b.title)\mid Book(b)\land \exists S \in(Buys(t) \land Student(S) \land t.bno =b.bno \land \\ t.sid =S.sid \land 
+\quad\forall S1\quad Student(S1) \in hasMajor(hm) \land hm.major='Chemistry' \and \\\quad S.birthyear >S1.birthyear \land t.sid=S1.sid )\}
+\end{array}
+\]
+}
+
+    
+
+    \item \greenbullet\  Express this query in Extended Safe TRC (i.e, with subquery expressions).
+    
+    Answer:
+    {\large
+\[
+\begin{array}{l}
+\{(b.bno,b.title)\mid book(b) \land \\ some(\{t.bno=b.bno \land t.sid=s.sid \mid buys(t) \} \land (some\{ t.sid=s.sid \land \\ all(\{ s.birthyear > s1.birthyear \land hm.sid=s1.sid \land \\ hm.major='Chemistry' \mid Student(s)\land Student(s1) \land hasmajor(hm)\})\}))
+\}
+\end{array}
+\]
+}
+
+
+    \item \bluebullet\ Express this query in Pure SQL by only using the `{\tt true = some}' or `{\tt true = all}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+  
+      \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt exists}' or `{\tt not exists}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.  
+    
+    \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt in}' or `{\tt not in}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    
+    \item    \bluebullet\  Express this query in Pure SQL without using subquery expressions.
+    Now you can use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    \end{enumerate}
+
+\item \label{queryFour} Consider the query `\emph{Find each student-book pair $(s,b)$ where $s$ is the sid of a student who majors in CS and who bought each book that costs no more than book $b$.}'
+
+    \begin{enumerate}
+    \item \greenbullet\  Express this query in Extended Safe TRC (i.e, with subquery expressions).
+    
+     Answer:
+    {\large
+\[
+\begin{array}{l}
+\{(t.sid,t.bno)\mid Buys(t) \land hasMajor(hM) \land hM.sid=t.sid \land hM.major='CS' \land \\ all((\{some(\{ t_{1}.sid=t.sid\} \mid Buys(t_{1}) \land t_{1}.bno=b.bno) \}\mid Book(b)\land Book(b_{1}) \\ \quad \land b.price \leq b_{1}.price \land b_{1}.bno=t.bno))
+
+\}
+\end{array}
+\]
+}
+    
+
+     \item \bluebullet\ Express this query in Pure SQL by only using the `{\tt true = some}' or `{\tt true = all}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    
+    \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt exists}' or `{\tt not exists}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    
+   \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt in}' or `{\tt not in}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+     
+     
+    \item    \bluebullet\  Express this query in Pure SQL without using subquery expressions.
+    Now you can use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    \end{enumerate}
+
+
+\item \label{queryFive} Consider the query `\emph{Find the sid and name of each student who bought all-but-one book that cost strictly more than \$30.}'
+
+    \begin{enumerate}
+    \item \greenbullet\  Express this query in Safe TRC (i.e, with quantifiers `$\exists$' or `$\forall$').
+    
+    Answer:{\large
+\[
+\begin{array}{l}
+ Here \quad b_{3} =b\_30\_1 \quad  and \quad b_{4} =b\_30\_2 \quad as  \quad per  \quad query, \quad i \quad wrote\\ 
+ \\
+\{(s.sid,s.sname) \mid Student(s) \land \\ \quad
+\forall_{s_{1}} \in Student( Book(b_{3}) \land b_{3}.price > 30 \land Book(b_{4} )\land b_{4}.price >30 \land \\ \quad b_{3}.bno =b_{4}.bno \land \forall_{b} \in Book(b_{3}.bno \neq t.bno \land Buys(s_{1}.sid,t.bno)\land \\ \quad b_{1}.bno=t.bno)\land \forall_{b_{2}}\in Book (b_{3}bno \neq t_{2}.bno \land Buys(s_{1}.sid,b_{2}.bno)\land\\ \quad b_{2}.bno = t_{2}.bno))
+\}
+\end{array}
+\]
+}
+   
+    
+    \item \bluebullet\ Express this query in Pure SQL by only using the `{\tt true = some}' or `{\tt true = all}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    
+    \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt exists}'  or `{\tt not exists}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+
+    
+    \item  \bluebullet\  Express this query in Pure SQL by only using the `{\tt in}' or `{\tt not in}' subquery expressions.
+    You can not use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    
+    \item    \bluebullet\  Express this query in Pure SQL without using subquery expressions.
+    Now you can use the set operations {\tt INTERSECT}, {\tt UNION}, and {\tt EXCEPT}.
+    \end{enumerate}
+
+
+\end{enumerate}
+
+Repeat the sub problems of the type `a' through `f' for the following queries
+
+
+\begin{enumerate}[resume]
+
+\item \redbullet\  Consider the query `\emph{Find the sid and sname of each student who majors in CS and who is (strictly) younger than some other student who also majors in CS.}"
+
+\item  \redbullet\ 
+Consider the query `\emph{Find each $(s,b)$ pair where $s$ is the                                                                                          
+sid of a student who bought book $b$ and such that                                                                                                    
+each other book bought by $s$ is a book cited by $b$}."
+
+
+\item  \redbullet\  Consider the query `\emph{Find each major that is not a major of any person who bought a book with title `Databases' or `Philosophy'}."
+
+
+\item \redbullet\  Consider the query \emph{`Find the bno and title of
+each book that is bought by a student who majors in CS and who is,
+among all students who major in CS, 
+the next-to-oldest.}'   
+
+
+
+\end{enumerate}
+\newpage
+
+\section{Expressing queries in Relational Algebra and RA SQL}
+
+Reconsider the queries in Section~\ref{TranslateSQL} and Section~\ref{PureSQL}.   The objective is to express  these queries in Relational Algebra in standard notation and in RA SQL.  
+
+There are some restrictions:
+\begin{itemize}
+\item You can only use {\tt WHERE} clauses that use 
+conditions involving constants.   For example conditions of the form `$t.A\, \theta\, \mathbf{a}$', i.e., these involving a constant `$\mathbf{a}$' are permitted, but conditions of the form '$t.A\, \theta\, s.B$', i.e., join conditions, are not allowed.   These should be absorbed in {\tt JOIN} operations in the {\tt FROM} clause.
+
+\item You can not use commas in any {\tt FROM} clause.  Rather, you should use {\tt JOIN} operations.
+\end{itemize}
+
+You can use the following letters, or indexed letters, to denote relation names in RA expressions:
+
+\begin{center}
+\fbox{
+\begin{tabular}{l|l}
+$S$, $S_1$, $S_2, \cdots$ & {\tt Student} \\
+$B$, $B_1$, $B_2, \cdots$ & {\tt Book} \\
+$T$, $T_1$, $T_2, \cdots$ & {\tt Buys} \\
+$M$, $M_1$, $M_2, \cdots$ & {\tt Major} \\
+$hM$, $hM_1$, $hM_2, \cdots$ & {\tt hasMajor} \\
+$C$, $C_1$, $C_2, \cdots$ & {\tt Cites} \\
+\end{tabular}
+}
+\end{center}
+
+To illustrate what you need to do, reconsider the query in Example~\ref{queriesWithSubexpressions} in Section~\ref{PureSQL}.
+
+\begin{example}\label{RAquery}
+Consider the query `\emph{Find the bno and title of each book that cites a book  and that was bought by a student who majors in `CS' or in `Math'}.'
+
+
+\begin{description}
+\item[(a)]  Express this query in Relational Algebra in standard notation.
+
+A possible solution is
+{
+\[
+\begin{array}{l}
+\pi_{bno,title}(Book\bowtie_{bno=bno_1} Cites)\, \cap\,\\
+\qquad 
+\pi_{bno,title}(\sigma_{major = \mathbf{CS}\lor major = \mathbf{Math}}(Book \bowtie Buys \bowtie hasMajor))
+\end{array}
+\]
+}
+
+If we use the letters in the above box, this expression becomes more succinct:
+
+{
+\[
+\begin{array}{l}
+\pi_{bno,title}(B\bowtie_{bno=bno_1} C)\, \cap\, \\
+\qquad\qquad \pi_{bno,title}(\sigma_{major = \mathbf{CS}\lor major = \mathbf{Math}}(B \bowtie T \bowtie hM))
+\end{array}
+\]
+}
+
+You are also allowed to introduce letters that denote expressions.  For example, let $E$ and $F$ denote the expression
+\[\pi_{bno,title}(B\bowtie_{bno=bno_1} C) \]
+and
+\[\pi_{bno,title}(\sigma_{major = \mathbf{CS}\lor major = \mathbf{Math}}(B \bowtie T \bowtie hM)),\]
+respectively. Then we can write the solution as follows:
+\[E\cap F.\]
+
+\item[(b)]  Express this query in RA SQL.   
+
+A possible solution is the following.
+Note that the {\tt WHERE} clause only use conditions involving constants.
+{\small
+\begin{verbatim}
+select bno, title
+from   Book 
+       JOIN Cites ON bno = bno1
+intersect
+select bno, title
+from   Book 
+       NATURAL JOIN Buys 
+       NATURAL JOIN hasMajor
+where  major = 'CS' or major = 'Math';
+\end{verbatim}
+}                    
+
+\newpage
+Another possible solution is the following.
+In this solution, we have associated the condition involving just constants, i.e., the condition `{\tt major = 'CS' or major = 'Math'}',
+with the {\tt hasMajor} relation.
+
+{\small
+\begin{verbatim}
+select bno, title
+from   Book 
+       JOIN Cites ON bno = bno1
+intersect
+select bno, title
+from   Book 
+       NATURAL JOIN Buys 
+       NATURAL JOIN (select sid 
+                     from   hasMajor
+                     where  major = 'CS' or major = 'Math') s;
+\end{verbatim}
+}                    
+
+
+
+We conclude with a solution that using a temporary view `{\tt CS\_or\_Math\_Student}':
+{\small
+\begin{verbatim}
+with   CS_or_Math_Student as
+       (select sid 
+        from   hasMajor
+        where  major = 'CS' or major = 'Math')
+select bno, title
+from   Book 
+       JOIN Cites ON bno = bno1
+intersect
+select bno, title
+from   Book 
+       NATURAL JOIN Buys 
+       NATURAL JOIN CS_or_Math_student;
+\end{verbatim}
+}                    
+
+
+\end{description}
+\end{example}
+
+
+
+We now turn to the problems in this section.
+
+\begin{enumerate}[resume]
+\item Reconsider the query in Problem~\ref{queryOne}
+`\emph{Find the bno and title of each book that
+was bought by exactly one student}.' 
+     \begin{enumerate}
+    
+     \item  \greenbullet\  Express this query in Relational Algebra in standard notation.
+     
+     Answer:
+     {
+     \[
+  \begin{array}{l}
+\pi_{B.bno,B.title}(B \bowtie_{B.bno=T.bno}T) - \\ \quad
+  \pi_{B.bno,B.title}(B\bowtie_{B.bno=T.bno}T\bowtie_{B.bno=T_{1}.bno \land T_{1}.sid \neq T.sid}T_{1})
+  \end{array}
+\]
+}
+    
+
+
+     \item  \bluebullet\ Express this query in RA SQL.
+     \end{enumerate}
+
+\newpage
+
+\item Reconsider the query in Problem~\ref{queryTwo}
+`\emph{Find each pair $(m, b)$ where $m$ is a major and $b$ is the bno of a book bought by a student who has major $m$ and such that the price of $b$ is the lowest among the set of books bought by students with major $m$}.'
+     \begin{enumerate}
+    
+     \item  \greenbullet\  Express this query in Relational Algebra in standard notation.
+     
+     Answer:
+     {
+     \[
+  \begin{array}{l}
+  \pi_{hM.major,B.bno}(B\bowtie_{B.bno=T.bno}T\bowtie_{T.sid=hM.sid}hM) - \\
+  \quad \pi_{hM.major,B.bno}(B\bowtie_{B.bno=T.bno}T\bowtie_{hM.sid=T.sid}\bowtie_{hM.major=hM_{2}.major}\\ \quad hM_{2}\bowtie_{hM_{2}.sid=T_{2}.sid}T_{2}\bowtie_{T_{2}.bno=B_{2}.bno \land B.price > B_{2}.price} B_{2})
+  \end{array}
+\]
+}
+    
+     \item  \bluebullet\  Express this query in RA SQL.
+     
+
+     \end{enumerate}
+
+\item Reconsider the query in Problem~\ref{queryThree}
+`\emph{Find the bno and title of each book that is bought by a student who
+is (strictly) younger than each student who majors in Chemistry and
+who also bought that book.}'
+     \begin{enumerate}
+    
+     \item  \greenbullet\  Express this query in Relational Algebra in standard notation.
+     
+     Answer:
+     {
+     \[
+  \begin{array}{l}
+  \pi_{B.bno,B.title}(T \bowtie_{T.sid=S.sid}S\bowtie_{B.bno=T.bno}B) \\ \quad \bowtie  \sigma_{(hM.major='Chemistry')}S_{1}\bowtie_{hM.sid=S_{1}.sid \land S.birthyear > S_{1}.birthyear}hM
+  \end{array}
+\]
+}
+
+    
+
+     \item  \bluebullet\  Express this query in RA SQL.
+     \end{enumerate}
+
+\item Reconsider the query in Problem~\ref{queryFour}
+`\emph{Find each student-book pair $(s,b)$ where $s$ is the sid of a student who majors in CS and who bought each book that costs no more than book $b$.}'
+     \begin{enumerate}
+    
+     \item  \greenbullet\  Express this query in Relational Algebra in standard notation.
+     
+     CS= $\pi_{t.sid ,t.bno,b.price}( \sigma_{t.bno = b.bno \wedge t.sid = hm.sid \wedge hm.major = 'CS'} (T \bowtie B \bowtie HM))$\\
+RA = $\pi_{sid,bno}(((\pi_{cs.sid,cs.bno,b.bno}(\sigma_{cs.price > b.price}(CS(cs) \bowtie BOOK(b)))) - (\pi_{cs.sid,cs.bno,b.bno} (\sigma_{cs.sid = t.sid \wedge t.bno=b.bno 
+\wedge cs.price >= b.price}(CS(cs) \bowtie BUYS(t) \bowtie BOOK(b)))))$\\\\
+Here, HM : hasMajor relations, T : Buys relations, B : Book relations
+
+     
+     
+     
+
+     \item  \bluebullet\  Express this query in RA SQL.
+     \end{enumerate}
+
+\item Reconsider the query in Problem~\ref{queryFive}
+`\emph{Find the sid and name of each student who bought all-but-one book that cost strictly more than \$30.}'
+
+     \begin{enumerate}
+    
+     \item  \greenbullet\  Express this query in Relational Algebra in standard notation.
+     
+     Answer:
+     {
+     \[
+  \begin{array}{l}
+  morethan30(M) =\pi_{T.sid,B.bno}(\sigma_{B.price>30}T\bowtie_{B.bno=T.bno}B) \\
+  K=\pi_{M.sid}(M) - (\pi_{M.sid}( M) -(\pi_{m.sid}(M\bowtie_{M.bno=M_1.bno\land M.sid = M_1.sid}))\\
+   \pi_{S.sid,S.sname(S\bowtie_{K.sid=S.sid}K)}
+    \end{array}
+\]
+}
+
+    
+
+    
+     \item  \bluebullet\  Express this query in RA SQL.
+     \end{enumerate}
+
+
+\end{enumerate}
+
+\newpage
+The remaining problems in this section are practice problems (indicated with a red bullet \redbullet).
+
+Repeat parts (a) and (b) for these queries.
+
+\begin{enumerate}[resume]
+\item \redbullet\  Consider the query `\emph{Find the sid and sname of each student who majors in 'CS' and who is (strictly) younger than some other student who also majors in 'CS'.}
+
+\item \redbullet\  Consider the query
+`\emph{Find each $(s,b)$ pair where $s$ is the                                                     
+sid of a student who bought book $b$ and such that                                                               
+each other book bought by $s$ is a book cited by $b$.}
+
+\item \redbullet\  Consider the query
+`\emph{Find each major that is not a major of any person who bought a book with title `Databases' or `Philosophy'.}
+
+
+\item \redbullet\  Consider the query \emph{`Find the bno and title of
+each book that is bought by a student who majors in CS and who is,
+among all students who major in CS, 
+the next-to-oldest.}'   
+
+
+\end{enumerate}
+
+\newpage
+\section{Expressing constraints using Relational Algebra}
+
+Recall that it is possible to express constraints as TRC sentences and as boolean SQL queries. It is also possible to express constraints using RA expressions. Let $E$, $F$, and $G$  denote RA expressions. Then we can express constraints using set comparisons between RA expressions as follows:
+\begin{center}
+\begin{tabular}{llll}
+$E \not=\emptyset$ & which is true if $E$ evaluates to an \blue{non-empty} relation \\
+$E = \emptyset$ & which is true if $E$ evaluates to the \blue{empty} relation \\
+$F \subseteq G$ & which is true if $F$ evaluates to a relation \\
+&that is a \blue{subset} of the relation obtained from $G$\\ 
+$F \not\subseteq G$ & which is true if $F$ evaluates to a relation \\
+&that is \blue{not} a \blue{subset} of the relation obtained from $G$\\ 
+\end{tabular}
+\end{center}
+
+Here are some examples of writing constraints in this manner.
+
+\begin{example}\label{constraintOne}
+`\emph{Some students majors in CS}.'  This constraint can be expressed as follows:
+\[\pi_{sid}(\sigma_{major = \mathbf{CS}}(hasMajor)) \neq \emptyset.
+\]
+Indeed,  the RA expression 
+\[\pi_{sid}(\sigma_{major = \mathbf{CS}}(hasMajor))\] 
+computes the set of all student sids who major in CS.   If this set is not empty then there are indeed students who major in CS.
+
+Incidentally, the constraint `\emph{No one majors in CS}' can be written as follows:
+\[\pi_{sid}(\sigma_{major = \mathbf{CS}}(hasMajor)) = \emptyset.
+\]
+\end{example}
+
+\begin{example}\label{constraintTwo}
+\emph{Each student buys at least two books}.   This constraint can be expressed as follows:
+\[\pi_{sid}(S) \subseteq \pi_{T_1.sid}(\sigma_{T_1.bno \neq T_2.bno}(T_1\bowtie_{T_1.sid = T_2.pid} T_2)).
+\]
+Indeed, \[\pi_{sid}(S)\] computes the set of all student sids and
+\[\pi_{T_1.sid}(\sigma_{T_1.bno \neq T_2.bno}(T_1\bowtie_{T_1.sid = T_2.pid} T_2))\] computes the set of all sids of student who buy at least two books.    When the first set is contained in the second, we must have that each student buys at least two books.
+
+Incidentally, the constraint `\emph{Some student buys fewer than two books}" can be written as follows:
+\[\pi_{sid}(S) \not\subseteq \pi_{T_1.sid}(\sigma_{T_1.bno \neq T_2.bno}(T_1\bowtie_{T_1.sid = T_2.pid} T_2)).
+\]
+
+\end{example}
+
+\bigskip
+We now turn to the problems in this section.
+
+Express each of the following constraints using set comparisons between RA expressions as illustrated in Example~\ref{constraintOne} and
+Example~\ref{constraintTwo}.
+
+\begin{enumerate}[resume]
+\item \greenbullet\  Among the books that cite a book, there are books that cite the same set of other books.\\
+
+Answer:
+\[\pi_{C_{1}.bno1}(\sigma_{C_{1}.bno1\neq C_{2}.bno}(C_{1}\bowtie_{C_{1}.bno2  = C_{2}.bno2} C_{2})) \neq \emptyset .
+\]
+
+
+
+\item \greenbullet\  Some student who majors only bought books that where bought by students who major in Math.
+
+Answer:
+\[\pi_{T.sid}(T\bowtie_{T.sid=hM_{1}.sid}hM_{1}) \subseteq\pi_{T_{2}.bno}(\sigma_{hM_{2}.major = 'Math'}(T_{2}\bowtie_{T_{2}.sid=hM_{2}.sid}hM_{2}))
+\]
+
+
+
+\item \greenbullet\  There are pairs of majors that have no common students who have those majors.
+\\Answer:
+\[\pi_{hM_{1}.major,hM_{2}.major}(\sigma_{hM_{1}.sid \neq hM_{2}.sid}(hM_{1}\bowtie hM_{2})) \neq \emptyset
+\]
+
+
+
+\item \greenbullet\  Attribute `sid' in the relation hasMajor is a foreign key referencing the primary key `sid' in the relation Student.\\
+Answer:
+\[\pi_{S.sid}(S) \subseteq \pi_{hM.sid}(hM_{hM.sid=S.sid}\bowtie S)
+\]
+
+\end{enumerate}
+
+For each of the following practice problem, express constraints using set comparisons between RA expressions as illustrated in Example~\ref{constraintOne} and Example~\ref{constraintTwo}.
+
+
+
+\begin{enumerate}[resume]
+\item \redbullet\ No book cites each book that cost strictly 
+less than \$30.
+
+\item \redbullet\  Each major is not the major of all students.
+
+
+\item \redbullet\  Each pair of different students who share a major buy a book with the same bno.
+
+\item \redbullet\  The attribute sid is a primary key of the Student relation.
+
+
+\end{enumerate}
+
+
+
+\section{Views}
+
+
+Express the following parameterized and recursive views. You are allowed to combine the features of both Pure SQL and RA SQL.
+
+\begin{enumerate}[resume]
+
+           
+\item\label{viewone} \bluebullet\  Define a parameterized view `{\tt PurchasedBookLessPrice(sid int, price integer)}' that returns, for a given student
+identified by `{\tt sid}' and a given `{\tt price}' value, the subrelation of
+`{\tt Book}' of books that are bought by that student and that cost strictly less than `{\tt price}'.
+
+Test your view for the parameter values (1001,15), (1001,30), (1001,50), and (1002,30).
+
+\item \bluebullet\ Define a parameterized view `{\tt CitedBookbyMajor(major text)}' that returns for a major `{\tt major}'
+the subrelation of `{\tt Book}' of books that are cited by a book bought by a the student who majors in `{\tt major}'.
+
+Test your view for each major.
+
+\item \bluebullet\ Define a parameterized view `{\tt JointlyBoughtBook(sid1 integer, sid2 integer)}' that returns the subrelation of `{\tt Book}' of books
+that are bought by both the students with sids `{\tt sid1}' and `{\tt sid2}', respectively.
+
+Test your view for the parameters (1001, 1002), (1001,1003), and (1002,1003).
+
+
+\item \bluebullet\  Let ${\tt PC}(parent: integer, child: integer)$ be a rooted parent-child tree.   So a pair $(n,m)$ in `${\tt PC}$' indicates that node $n$ is a parent of node $m$.
+The `{\tt sameGeneration(n1, n2)}' binary relation is inductively defined using the following two rules:
+\begin{itemize}
+\item If $n$ is a node in ${\tt PC}$, then the pair $(n,n)$ is in the {\tt sameGeneration} relation. ({\bf Base rule})
+\item If $n_1$ is the parent of $m_1$ in ${\tt PC}$ and $n_2$ is the parent of $m_2$ in ${\tt PC}$ and 
+$(n_1,n_2)$ is a pair in the {\tt sameGeneration} relation then $(m_1,m_2)$ is a pair in the {\tt sameGeneration} relation. ({\bf Inductive Rule})
+\end{itemize}
+
+Write a \blue{recursive view} for the {\tt sameGeneration} relation.
+Test your view.
+
+\end{enumerate}
+
+
+\newpage
+
+\section{Theory about safe TRC and Relational Algebra}
+
+\begin{enumerate}[resume]
+\item \redbullet\  Prove that each safe TRC formula $F(t_1,\ldots,t_n)$ can be
+brought into the following normal form
+\[
+\bigvee_{i=1}^k R_1^i(t_1)\land\cdots\land R_n^(t_n)\land G^ijt_1,\ldots t_n)
+\]
+where 
+\begin{itemize}
+\item $R_i^j$ is a relation name for each $i\in[1,n]$ and $j\in[1,k]$; and
+\item $G^j(t_1,\ldots,t_n)$ is a TRC formula wherein no disjunctions (`$\lor$') occur for each $i\in[1,k]$.
+\end{itemize}
+\item \redbullet\ 
+Prove that for each RA expression `$E$' with attributes $(A_1,\ldots,A_k)$, there exists a safe TRC formula `$F_E$' such that `$E$' and 
+`$\{(A_1:u_1(t_1),\ldots, A_k:u_k(t_1,\ldots,t_n))\mid F_E(t_1,\ldots,t_n)\}$' 
+express the same query.
+
+\item \redbullet\ 
+Prove that for each safe TRC formula `$F(t_1,\ldots,t_k)$' there exists a RA expressions `$E_F$' such that 
+`$\{(A_1:u_1(t_1),\ldots, A_k:u_k(t_1,\ldots,t_n))\mid F_E(t_1,\ldots,t_n)\}$' 
+and $E_F$ express the same query.
+
+\end{enumerate}
+
+
+\end{document}
+
+
+
+
+

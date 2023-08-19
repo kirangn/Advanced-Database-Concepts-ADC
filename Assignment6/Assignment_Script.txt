@@ -1,0 +1,258 @@
+CREATE DATABASE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+ size of relation S | avg execution time to scan S | avg execution time to sort S 
+--------------------+------------------------------+------------------------------
+                 10 |                        0.010 |                        0.091
+                100 |                        0.017 |                        0.032
+               1000 |                        0.105 |                        0.322
+              10000 |                        0.772 |                        2.529
+             100000 |                        4.760 |                       21.809
+            1000000 |                       47.993 |                      240.824
+           10000000 |                      509.422 |                     3214.988
+          100000000 |                     5973.581 |                    37123.762
+(8 rows)
+
+Problem3
+Problem3-queryPlan10
+ makes 
+-------
+ 
+(1 row)
+
+                                           QUERY PLAN                                           
+------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.013..0.016 rows=10 loops=1)
+ Planning Time: 0.194 ms
+ Execution Time: 0.039 ms
+(3 rows)
+
+                                              QUERY PLAN                                              
+------------------------------------------------------------------------------------------------------
+ Sort  (cost=179.78..186.16 rows=2550 width=4) (actual time=0.021..0.024 rows=10 loops=1)
+   Sort Key: x
+   Sort Method: quicksort  Memory: 25kB
+   ->  Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.005..0.007 rows=10 loops=1)
+ Planning Time: 0.059 ms
+ Execution Time: 0.040 ms
+(6 rows)
+
+Problem3-queryPlan100
+ makes 
+-------
+ 
+(1 row)
+
+                                           QUERY PLAN                                            
+-------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.013..0.031 rows=100 loops=1)
+ Planning Time: 0.123 ms
+ Execution Time: 0.046 ms
+(3 rows)
+
+                                              QUERY PLAN                                               
+-------------------------------------------------------------------------------------------------------
+ Sort  (cost=179.78..186.16 rows=2550 width=4) (actual time=0.086..0.098 rows=100 loops=1)
+   Sort Key: x
+   Sort Method: quicksort  Memory: 29kB
+   ->  Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.009..0.025 rows=100 loops=1)
+ Planning Time: 0.031 ms
+ Execution Time: 0.115 ms
+(6 rows)
+
+Problem3-queryPlan1000
+ makes 
+-------
+ 
+(1 row)
+
+                                            QUERY PLAN                                            
+--------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.024..0.234 rows=1000 loops=1)
+ Planning Time: 0.122 ms
+ Execution Time: 0.332 ms
+(3 rows)
+
+Problem3-queryPlan10000
+                                            QUERY PLAN                                            
+--------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.013..0.190 rows=1000 loops=1)
+ Planning Time: 0.019 ms
+ Execution Time: 0.287 ms
+(3 rows)
+
+                                               QUERY PLAN                                               
+--------------------------------------------------------------------------------------------------------
+ Sort  (cost=179.78..186.16 rows=2550 width=4) (actual time=0.563..0.685 rows=1000 loops=1)
+   Sort Key: x
+   Sort Method: quicksort  Memory: 71kB
+   ->  Seq Scan on s  (cost=0.00..35.50 rows=2550 width=4) (actual time=0.013..0.188 rows=1000 loops=1)
+ Planning Time: 0.026 ms
+ Execution Time: 0.784 ms
+(6 rows)
+
+Problem3-queryPlan100000
+ makes 
+-------
+ 
+(1 row)
+
+                                               QUERY PLAN                                               
+--------------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..1572.65 rows=112965 width=4) (actual time=0.006..4.162 rows=100000 loops=1)
+ Planning Time: 0.037 ms
+ Execution Time: 6.190 ms
+(3 rows)
+
+                                                  QUERY PLAN                                                  
+--------------------------------------------------------------------------------------------------------------
+ Sort  (cost=11053.53..11335.94 rows=112965 width=4) (actual time=16.925..20.150 rows=100000 loops=1)
+   Sort Key: x
+   Sort Method: external merge  Disk: 1376kB
+   ->  Seq Scan on s  (cost=0.00..1572.65 rows=112965 width=4) (actual time=0.003..3.012 rows=100000 loops=1)
+ Planning Time: 0.009 ms
+ Execution Time: 22.526 ms
+(6 rows)
+
+Problem3-queryPlan1000000
+ makes 
+-------
+ 
+(1 row)
+
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..15708.75 rows=1128375 width=4) (actual time=0.005..36.755 rows=1000000 loops=1)
+ Planning Time: 0.038 ms
+ Execution Time: 54.708 ms
+(3 rows)
+
+                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=144571.25..147392.18 rows=1128375 width=4) (actual time=172.500..220.086 rows=1000000 loops=1)
+   Sort Key: x
+   Sort Method: external merge  Disk: 13800kB
+   ->  Seq Scan on s  (cost=0.00..15708.75 rows=1128375 width=4) (actual time=0.005..28.482 rows=1000000 loops=1)
+ Planning Time: 0.025 ms
+ Execution Time: 240.611 ms
+(6 rows)
+
+Problem3-queryPlan10000000
+ makes 
+-------
+ 
+(1 row)
+
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..157080.40 rows=11283240 width=4) (actual time=0.015..486.197 rows=10000000 loops=1)
+ Planning Time: 0.479 ms
+ Execution Time: 665.045 ms
+(3 rows)
+
+                                                      QUERY PLAN                                                      
+----------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1787312.97..1815521.07 rows=11283240 width=4) (actual time=2602.183..3057.567 rows=10000000 loops=1)
+   Sort Key: x
+   Sort Method: external merge  Disk: 137000kB
+   ->  Seq Scan on s  (cost=0.00..157080.40 rows=11283240 width=4) (actual time=0.144..314.895 rows=10000000 loops=1)
+ Planning Time: 0.027 ms
+ Execution Time: 3289.724 ms
+(6 rows)
+
+Problem3-queryPlan100000000
+ makes 
+-------
+ 
+(1 row)
+
+                                                     QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Seq Scan on s  (cost=0.00..1570796.90 rows=112831890 width=4) (actual time=0.177..7340.909 rows=100000000 loops=1)
+ Planning Time: 1.863 ms
+ Execution Time: 9152.495 ms
+(3 rows)
+
+                                                              QUERY PLAN                                                               
+---------------------------------------------------------------------------------------------------------------------------------------
+ Gather Merge  (cost=8832930.06..19803463.18 rows=94026576 width=4) (actual time=26083.618..37087.791 rows=100000000 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Sort  (cost=8831930.04..8949463.26 rows=47013288 width=4) (actual time=25720.193..28251.116 rows=33333333 loops=3)
+         Sort Key: x
+         Sort Method: external merge  Disk: 453440kB
+         Worker 0:  Sort Method: external merge  Disk: 462472kB
+         Worker 1:  Sort Method: external merge  Disk: 454200kB
+         ->  Parallel Seq Scan on s  (cost=0.00..912610.88 rows=47013288 width=4) (actual time=0.081..12972.314 rows=33333333 loops=3)
+ Planning Time: 0.036 ms
+ Execution Time: 39088.577 ms
+(11 rows)
+
+3b with work_mem set
+3b with work_mem set to 64kb
+3b parallel = 0
+SET
+SET
+ size of relation S | avg execution time to scan S | avg execution time to sort S 
+--------------------+------------------------------+------------------------------
+                 10 |                        0.010 |                        0.026
+                100 |                        0.017 |                        0.044
+               1000 |                        0.114 |                        1.058
+              10000 |                        0.812 |                        3.941
+             100000 |                        4.906 |                       31.226
+            1000000 |                       47.944 |                      436.637
+           10000000 |                      494.418 |                     5358.840
+          100000000 |                     6022.513 |                   104901.693
+(8 rows)
+
+3b with work_mem set to 4mb
+SET
+ size of relation S | avg execution time to scan S | avg execution time to sort S 
+--------------------+------------------------------+------------------------------
+                 10 |                        0.012 |                        0.016
+                100 |                        0.014 |                        0.035
+               1000 |                        0.114 |                        0.334
+              10000 |                        0.993 |                        2.864
+             100000 |                        4.627 |                       21.861
+            1000000 |                       47.861 |                      243.282
+           10000000 |                      507.944 |                     3278.727
+          100000000 |                     6003.278 |                    49939.238
+(8 rows)
+
+3b with work_mem set to 32mb
+SET
+ size of relation S | avg execution time to scan S | avg execution time to sort S 
+--------------------+------------------------------+------------------------------
+                 10 |                        0.008 |                        0.016
+                100 |                        0.017 |                        0.039
+               1000 |                        0.103 |                        0.251
+              10000 |                        0.769 |                        2.329
+             100000 |                        4.867 |                       17.719
+            1000000 |                       48.328 |                      248.586
+           10000000 |                      495.374 |                     2606.630
+          100000000 |                     6186.740 |                    33944.568
+(8 rows)
+
+3b with work_mem set to 256mb
+SET
+ size of relation S | avg execution time to scan S | avg execution time to sort S 
+--------------------+------------------------------+------------------------------
+                 10 |                        0.010 |                        0.013
+                100 |                        0.014 |                        0.033
+               1000 |                        0.089 |                        0.263
+              10000 |                        0.782 |                        2.404
+             100000 |                        4.850 |                       18.206
+            1000000 |                       48.653 |                      204.693
+           10000000 |                      492.851 |                     2794.362
+          100000000 |                     5986.917 |                    31396.808
+(8 rows)
+
+DROP DATABASE
+SET
+SET
+Problem 4a
+Problem 4b

@@ -1,0 +1,491 @@
+INSERT 0 14
+Problem 3
+Problem 3.c
+ bno  |    title    
+------+-------------
+ 2001 | Databases
+ 2002 | AI
+ 2003 | DataScience
+ 2004 | Databases
+ 2005 | Programming
+ 2006 | Complexity
+ 2007 | AI
+ 2008 | Algorithms
+ 2009 | Networks
+ 2010 | AI
+ 2011 | Logic
+(11 rows)
+
+Problem 3.d
+ bno  |    title    
+------+-------------
+ 2001 | Databases
+ 2002 | AI
+ 2003 | DataScience
+ 2004 | Databases
+ 2005 | Programming
+ 2006 | Complexity
+ 2007 | AI
+ 2008 | Algorithms
+ 2009 | Networks
+ 2010 | AI
+ 2011 | Logic
+(11 rows)
+
+Problem 3.e
+ bno  |    title    
+------+-------------
+ 2001 | Databases
+ 2002 | AI
+ 2003 | DataScience
+ 2004 | Databases
+ 2005 | Programming
+ 2006 | Complexity
+ 2007 | AI
+ 2008 | Algorithms
+ 2009 | Networks
+ 2010 | AI
+ 2011 | Logic
+(11 rows)
+
+Problem 3.f
+ bno  |    title    
+------+-------------
+ 2011 | Logic
+ 2004 | Databases
+ 2005 | Programming
+ 2008 | Algorithms
+ 2006 | Complexity
+ 2002 | AI
+ 2007 | AI
+ 2009 | Networks
+ 2001 | Databases
+ 2010 | AI
+ 2003 | DataScience
+(11 rows)
+
+Problem 4
+Problem 4.b
+ sid  | bno  
+------+------
+ 1001 | 2001
+ 1001 | 2002
+ 1001 | 2007
+ 1002 | 2001
+ 1002 | 2002
+ 1002 | 2007
+ 1006 | 2001
+ 1006 | 2002
+ 1006 | 2003
+ 1006 | 2004
+ 1006 | 2007
+ 1006 | 2011
+ 1011 | 2001
+ 1011 | 2002
+ 1011 | 2003
+ 1011 | 2004
+ 1011 | 2007
+ 1011 | 2011
+ 1012 | 2001
+ 1012 | 2002
+ 1012 | 2007
+ 1015 | 2001
+ 1015 | 2002
+ 1015 | 2007
+(24 rows)
+
+Problem 4.c
+ sid  | bno  
+------+------
+ 1011 | 2003
+ 1006 | 2003
+ 1015 | 2002
+ 1002 | 2002
+ 1001 | 2002
+ 1015 | 2007
+ 1006 | 2002
+ 1006 | 2011
+ 1011 | 2002
+ 1011 | 2004
+ 1012 | 2001
+ 1002 | 2001
+ 1011 | 2007
+ 1006 | 2007
+ 1011 | 2011
+ 1001 | 2001
+ 1011 | 2001
+ 1012 | 2007
+ 1001 | 2007
+ 1006 | 2001
+ 1012 | 2002
+ 1006 | 2004
+ 1002 | 2007
+ 1015 | 2001
+(24 rows)
+
+Problem 4.d
+ sid  | bno  
+------+------
+ 1001 | 2001
+ 1001 | 2002
+ 1001 | 2007
+ 1002 | 2001
+ 1002 | 2002
+ 1002 | 2007
+ 1006 | 2001
+ 1006 | 2002
+ 1006 | 2003
+ 1006 | 2004
+ 1006 | 2007
+ 1006 | 2011
+ 1011 | 2001
+ 1011 | 2002
+ 1011 | 2003
+ 1011 | 2004
+ 1011 | 2007
+ 1011 | 2011
+ 1012 | 2001
+ 1012 | 2002
+ 1012 | 2007
+ 1015 | 2001
+ 1015 | 2002
+ 1015 | 2007
+(24 rows)
+
+Problem 4.e
+ sid  | bno  
+------+------
+ 1002 | 2007
+ 1001 | 2001
+ 1011 | 2002
+ 1012 | 2007
+ 1006 | 2001
+ 1011 | 2003
+ 1015 | 2001
+ 1011 | 2011
+ 1011 | 2007
+ 1002 | 2002
+ 1001 | 2002
+ 1002 | 2001
+ 1015 | 2007
+ 1011 | 2004
+ 1006 | 2007
+ 1012 | 2001
+ 1012 | 2002
+ 1011 | 2001
+ 1006 | 2002
+ 1006 | 2003
+ 1006 | 2011
+ 1001 | 2007
+ 1006 | 2004
+ 1015 | 2002
+(24 rows)
+
+Problem 5
+Problem 5.b
+ sid  |  sname   
+------+----------
+ 1006 | Ryan
+ 1007 | Danielle
+ 1008 | Emma
+ 1009 | Hasan
+ 1010 | Linda
+ 1016 | YinYue
+ 1018 | Arif
+ 1019 | John
+(8 rows)
+
+Problem 5.c
+ sid  |  sname   
+------+----------
+ 1006 | Ryan
+ 1007 | Danielle
+ 1008 | Emma
+ 1009 | Hasan
+ 1010 | Linda
+ 1016 | YinYue
+ 1018 | Arif
+ 1019 | John
+(8 rows)
+
+Problem 5.d
+ sid  |  sname   
+------+----------
+ 1006 | Ryan
+ 1007 | Danielle
+ 1008 | Emma
+ 1009 | Hasan
+ 1010 | Linda
+ 1016 | YinYue
+ 1018 | Arif
+ 1019 | John
+(8 rows)
+
+Problem 5.e
+ sid  |  sname   
+------+----------
+ 1006 | Ryan
+ 1007 | Danielle
+ 1008 | Emma
+ 1009 | Hasan
+ 1010 | Linda
+ 1016 | YinYue
+ 1018 | Arif
+ 1019 | John
+(8 rows)
+
+Problem 10.b
+ bno  |  title  
+------+---------
+ 2013 | Physics
+ 2012 | Physics
+(2 rows)
+
+Problem 11.b
+    major    | bno  
+-------------+------
+ CS          | 2007
+ Math        | 2007
+ Chemistry   | 2013
+ DataScience | 2007
+ CS          | 2002
+ Math        | 2002
+ Physics     | 2002
+ DataScience | 2001
+ CS          | 2001
+ DataScience | 2002
+ Physics     | 2007
+ Math        | 2001
+ Physics     | 2001
+(13 rows)
+
+Problem 12.b
+ bno  |    title    
+------+-------------
+ 2004 | Databases
+ 2008 | Algorithms
+ 2006 | Complexity
+ 2007 | AI
+ 2005 | Programming
+ 2002 | AI
+ 2010 | AI
+ 2011 | Logic
+ 2009 | Networks
+ 2001 | Databases
+ 2003 | DataScience
+(11 rows)
+
+Problem 13.b
+ sid  | bno  
+------+------
+ 1002 | 2007
+ 1001 | 2001
+ 1011 | 2002
+ 1006 | 2001
+ 1012 | 2007
+ 1011 | 2003
+ 1015 | 2001
+ 1011 | 2011
+ 1011 | 2007
+ 1002 | 2002
+ 1001 | 2002
+ 1002 | 2001
+ 1015 | 2007
+ 1011 | 2004
+ 1006 | 2007
+ 1012 | 2001
+ 1012 | 2002
+ 1011 | 2001
+ 1006 | 2002
+ 1006 | 2003
+ 1006 | 2011
+ 1001 | 2007
+ 1006 | 2004
+ 1015 | 2002
+(24 rows)
+
+Problem 14.b
+ sid  |  sname   
+------+----------
+ 1006 | Ryan
+ 1007 | Danielle
+ 1008 | Emma
+ 1009 | Hasan
+ 1010 | Linda
+ 1016 | YinYue
+ 1018 | Arif
+ 1019 | John
+(8 rows)
+
+Problem 27
+DROP FUNCTION
+CREATE FUNCTION
+ bno | title | price 
+-----+-------+-------
+(0 rows)
+
+ bno  |   title   | price 
+------+-----------+-------
+ 2001 | Databases |    20
+ 2002 | AI        |    20
+ 2007 | AI        |    20
+ 2011 | Logic     |    25
+(4 rows)
+
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2002 | AI          |    20
+ 2005 | Programming |    30
+ 2006 | Complexity  |    30
+ 2007 | AI          |    20
+ 2008 | Algorithms  |    40
+ 2010 | AI          |    30
+ 2011 | Logic       |    25
+(8 rows)
+
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2002 | AI          |    20
+ 2003 | DataScience |    25
+ 2007 | AI          |    20
+(4 rows)
+
+Problem 28
+DROP FUNCTION
+CREATE FUNCTION
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2003 | DataScience |    25
+ 2004 | Databases   |    25
+ 2005 | Programming |    30
+ 2006 | Complexity  |    30
+ 2007 | AI          |    20
+ 2008 | Algorithms  |    40
+(7 rows)
+
+ bno  |  title  | price 
+------+---------+-------
+ 2013 | Physics |    30
+(1 row)
+
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2003 | DataScience |    25
+ 2004 | Databases   |    25
+ 2005 | Programming |    30
+ 2006 | Complexity  |    30
+ 2007 | AI          |    20
+ 2008 | Algorithms  |    40
+(7 rows)
+
+ bno | title | price 
+-----+-------+-------
+(0 rows)
+
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2003 | DataScience |    25
+ 2004 | Databases   |    25
+ 2005 | Programming |    30
+ 2006 | Complexity  |    30
+ 2007 | AI          |    20
+ 2008 | Algorithms  |    40
+(7 rows)
+
+ bno  |    title    | price 
+------+-------------+-------
+ 2001 | Databases   |    20
+ 2003 | DataScience |    25
+ 2004 | Databases   |    25
+ 2005 | Programming |    30
+ 2006 | Complexity  |    30
+ 2007 | AI          |    20
+ 2008 | Algorithms  |    40
+(7 rows)
+
+Problem 29
+ bno  |    title    | price 
+------+-------------+-------
+ 2005 | Programming |    30
+ 2010 | AI          |    30
+ 2002 | AI          |    20
+ 2001 | Databases   |    20
+ 2007 | AI          |    20
+ 2006 | Complexity  |    30
+(6 rows)
+
+ bno  |   title    | price 
+------+------------+-------
+ 2011 | Logic      |    25
+ 2010 | AI         |    30
+ 2008 | Algorithms |    40
+ 2002 | AI         |    20
+ 2001 | Databases  |    20
+ 2007 | AI         |    20
+(6 rows)
+
+ bno  |   title   | price 
+------+-----------+-------
+ 2010 | AI        |    30
+ 2002 | AI        |    20
+ 2001 | Databases |    20
+ 2007 | AI        |    20
+(4 rows)
+
+Problem 30
+DROP VIEW
+CREATE VIEW
+ n1 | n2 
+----+----
+  1 |  1
+ 14 | 14
+  7 |  7
+  2 |  2
+ 12 | 12
+ 11 | 11
+  6 |  6
+  3 |  3
+  8 |  8
+  5 |  5
+  9 |  9
+  4 |  4
+ 10 | 10
+ 13 | 13
+ 15 | 15
+  4 |  2
+  3 |  2
+  4 |  3
+  2 |  3
+  3 |  4
+  2 |  4
+  6 |  5
+  5 |  6
+ 11 |  9
+ 10 |  9
+ 11 | 10
+  9 | 10
+ 10 | 11
+  9 | 11
+ 13 | 12
+ 12 | 13
+  7 |  5
+  7 |  6
+  6 |  7
+  5 |  7
+ 13 |  8
+ 12 |  8
+  8 | 12
+  8 | 13
+ 14 |  9
+ 14 | 10
+ 14 | 11
+ 11 | 14
+ 10 | 14
+  9 | 14
+(45 rows)
+

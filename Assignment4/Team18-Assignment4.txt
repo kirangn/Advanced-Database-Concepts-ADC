@@ -1,0 +1,252 @@
+CREATE DATABASE
+Problem 1
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 5
+INSERT 0 4
+ pid1 | pid2 
+------+------
+ 1001 | 1003
+ 1001 | 1004
+ 1002 | 1003
+ 1003 | 1004
+(4 rows)
+
+DELETE 1
+ pid1 | pid2 
+------+------
+ 1001 | 1003
+ 1002 | 1003
+(2 rows)
+
+Problem 3
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+DELETE 4
+DELETE 0
+INSERT 0 6
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                0
+ 1002 | Tammy |                0
+ 1003 | John  |                0
+ 1004 | Sam   |                0
+ 1005 | Kim   |                0
+ 1006 | Seema |                0
+(6 rows)
+
+INSERT 0 10
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                3
+ 1002 | Tammy |                3
+ 1003 | John  |                1
+ 1004 | Sam   |                0
+ 1005 | Kim   |                1
+ 1006 | Seema |                2
+(6 rows)
+
+INSERT 0 10
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                4
+ 1002 | Tammy |                4
+ 1003 | John  |                3
+ 1004 | Sam   |                3
+ 1005 | Kim   |                2
+ 1006 | Seema |                4
+(6 rows)
+
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                4
+ 1002 | Tammy |                4
+ 1003 | John  |                3
+ 1004 | Sam   |                3
+ 1005 | Kim   |                2
+ 1006 | Seema |                4
+(6 rows)
+
+DELETE 1
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                3
+ 1002 | Tammy |                4
+ 1003 | John  |                3
+ 1004 | Sam   |                3
+ 1005 | Kim   |                2
+ 1006 | Seema |                4
+(6 rows)
+
+DELETE 1
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                3
+ 1002 | Tammy |                3
+ 1003 | John  |                3
+ 1004 | Sam   |                3
+ 1005 | Kim   |                2
+ 1006 | Seema |                4
+(6 rows)
+
+DELETE 1
+ pid  | name  | ct_knows_persons 
+------+-------+------------------
+ 1001 | Rama  |                2
+ 1002 | Tammy |                3
+ 1003 | John  |                3
+ 1004 | Sam   |                2
+ 1005 | Kim   |                1
+(5 rows)
+
+DROP TABLE
+DROP TABLE
+Problem 2
+CREATE TABLE
+CREATE TABLE
+Trigger inserting the unique values to the company table
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 2
+INSERT 0 1
+After inserting values to company table
+ cname  |    city     
+--------+-------------
+ Apple  | Bloomington
+ Amazon | Chicago
+ Apple  | NewYork
+(3 rows)
+
+Trigger for inserting  values to worksfor table that are present in company
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+After inserting valid values to worksfor table
+ pid  | cname 
+------+-------
+ 1001 | Apple
+(1 row)
+
+Trigger for delete function
+CREATE FUNCTION
+CREATE TRIGGER
+After deleting values to company table, which also impact the worksfor
+ pid  | cname 
+------+-------
+ 1001 | Apple
+(1 row)
+
+Problem 4
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 6
+INSERT 0 4
+INSERT 0 5
+INSERT 0 11
+Problem 4a
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+Problem 4b -Testcase
+INSERT 0 0
+Course table after an enroll and waitlist
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1006 |   4
+(3 rows)
+
+ sid  | cno | position 
+------+-----+----------
+ 1003 |   4 |        1
+(1 row)
+
+Problem 4c
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 0
+INSERT 0 0
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1006 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+(6 rows)
+
+ sid  | cno | position 
+------+-----+----------
+ 1003 |   4 |        1
+ 1004 |   2 |        1
+ 1004 |   4 |        2
+(3 rows)
+
+Execute delete for sid 1006 and cno =4 
+DELETE 1
+After deleting the sid =1006, the waitlist position for sid 1003 is vanished and added to the enroll table as there was vacant postion
+ sid  | cno | position 
+------+-----+----------
+ 1004 |   2 |        1
+ 1004 |   4 |        2
+(2 rows)
+
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+ 1003 |   4
+(6 rows)
+
+Delete the course no =3 and sid =1002, should only update the total in course, as this course still has some vacancy in the enrollment
+DELETE 1
+After deleting the sid =1002, the course  and enroll table look like this
+ sid  | cno 
+------+-----
+ 1005 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+ 1003 |   4
+(5 rows)
+
+ cno |    cname     | total | max 
+-----+--------------+-------+-----
+   1 | AML          |     0 |   5
+   2 | Usability    |     3 |   3
+   4 | CN           |     2 |   2
+   3 | DeepLearning |     0 |   4
+(4 rows)
+
+DROP DATABASE

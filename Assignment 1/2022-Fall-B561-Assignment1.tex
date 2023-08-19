@@ -1,0 +1,660 @@
+\documentclass{article}
+\usepackage{enumitem}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[normalem]{ulem}
+
+\usepackage{color}
+
+
+\newcommand{\red}[1]{{\color{red}#1}}
+\newcommand{\green}[1]{{\color{green}#1}}
+\newcommand{\blue}[1]{{\color{blue}#1}}
+\newcommand{\SFW}[3]{{\color{blue}}}
+
+\newcommand{\redbullet}{$\red{\bullet}$}
+\newcommand{\bluebullet}{$\blue{\bullet}$}
+
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+
+\title{Fall 2022 B561 Assignment 1 \\
+Relational Databases, Expressing Constraints and Queries in SQL, Python, and in Safe Tuple Relational Calculus (safe TRC)\footnote{This assignment covers lectures 1 through 4}.}
+\author{Dirk Van Gucht}
+\date{Released: August 25, 2022\\ Due: September 8, 2022 by 11:45pm}
+\maketitle
+
+
+\section{Introduction}
+
+The goals for this assignment are to 
+\begin{enumerate}
+\item become familiar with the PostgreSQL system 
+\footnote{To solve this assignment, you will need to download and install PostgreSQL (version 13 or higher) on your computer.};
+\item become familiar with Python comprehensions.
+\item create a relational database and populate it with data;
+\item examine the side-effects on the state of a database by inserts and deletes in the presence or absence
+of primary and foreign key constraints;
+\item express some constraints and queries in SQL and evaluate them in PostgreSQL;
+\item express some constraints and queries in Python and evaluate;
+\item translate safe TRC queries to SQL and Python;
+\item prove some properties about safe TRC.
+
+\end{enumerate}
+
+To turn in your assignment, you will need to upload to Canvas a file with name \blue{{\tt assignment1.sql}} 
+which contains 
+the necessary SQL statements that solve the graded problems in this assignment. 
+Analogously, you will need to upload to Canvas a file with name \blue{{\tt assignment1.py}} 
+which contains 
+the necessary Python statements that solve the graded problems in this assignment. 
+
+The graded problems are indicated with a blue bullet point\ \bluebullet.   The non-graded problems are indicated with a red bullet point\ \redbullet.
+The \blue{{\tt assignment1.sql}} file and \blue{{\tt assignment1.py}} must be so that the AI's can run it in their PostgreSQL and Python environments.
+You should use the \blue{{\tt Assignment1Script.sql}} and
+\blue{{\tt Assignment1Script.py}} files to construct the 
+\blue{{\tt assignment1.sql}} 
+file and the \blue{{\tt assignment1.py}}, respectively . 
+(Note that the data to be used for this assignment is included in this file.)
+In addition, you will need to upload a separate 
+\blue{{\tt assignment1SQL.txt}} 
+file that contains the results of running
+your SQL code and a \blue{{\tt assignment1Python.txt}} 
+file that contains the results of running
+your Python code.
+Finally, you need to upload a file 
+ \blue{{\tt assignment1.pdf}} 
+that contains the solutions to the graded problems that require it.\footnote{It is strongly recommended that you use Latex to write safe TRC formulas and queries.
+For a good way to learn about Latex, look at 
+%\begin{verbatim}
+https://www.overleaf.com/learn/latex/Free\_online\_introduction\_to\_LaTeX\_(part\_1).
+%\end{verbatim}
+%You can also inspect the Latex source code for this assignment as well as the document TRC\_SQL.tex provided in Module 4.
+}
+
+For the problems in this assignment we will use the following database schema:\footnote{The primary key, which may consist of one or more attributes, of each of these relations is underlined.}
+
+\begin{center}
+{\tt
+  \begin{tabular}{l}
+  {Student}($\underline{\tt sid}$, sname, homeCity) \\
+  {Department}($\underline{\tt deptName}, {\tt mainOffice}$) \\
+  {Major}($\underline{\tt major}$) \\
+  {employedBy}($\underline{\tt sid}$, deptName, salary) \\
+  {departmentLocation}($\underline{\tt deptName, building}$) \\
+  {studentMajor}($\underline{\tt sid, major}$) \\
+  {hasFriend}($\underline{\tt sid1, sid2}$) \\
+  \end{tabular}
+  }
+\end{center}
+
+In this database we maintain a set of students ({\tt Student}), a set
+of departments ({\tt Department}), and a set of (major) majors ({\tt Major}).  
+The {\tt sname} attribute in {\tt Student} is the name of the student.  
+The {\tt homeCity} attribute in {\tt Student} specifies the home city of the student.
+The {\tt deptName} attribute in {\tt Department} is the name of the department.
+The {\tt mainOffice} attribute in {\tt Department} is the name of the building where the department has its main office.
+The {\tt major} attribute in {\tt Major} is the name of a (major) major.
+
+A student can be employed by at most one department. This information is maintained in the {\tt employedBy} relation. (We permit that a student is not employed by any department and that a department may not employ any students.)
+The {\tt salary} attribute in {\tt employedBy} specifies the salary made by the student.
+
+The {\tt building} attribute in {\tt departmentLocation} indicates a building in which the department is located.
+(A department may be located in multiple buildings.)
+
+A student can have multiple majors. This information is maintained in the {\tt studentMajor} relation.  A major can be
+the major of multiple students.  (A student may not have any majors, and a major may
+have no students with that major.)
+
+A pair $(s_1,s_2)$ in {\tt hasFriend} indicates that student $s_1$ considers student $s_2$ as a friend.
+It is possible that $s_1$ considers $s_2$ as a friend, but not necessarily the other way around.
+In other words, the {\tt hasFriend} relation can not be assumed to be symmetric.
+
+The domain for the attributes {\tt sid}, {\tt salary}, {\tt sid1}, and {\tt sid2} is {\tt integer}.   The domain for all other attributes is {\tt text}.
+
+\medskip
+We assume the following foreign key constraints:
+\begin{itemize}
+\item {\tt sid} is a foreign key in {\tt employedBy} referencing the primary key {\tt sid} in {\tt Student};
+\item {\tt deptName} is a foreign key in {\tt employedBy} referencing the primary key {\tt deptName} in {\tt Department};
+\item {\tt deptName} is a foreign key in {\tt departmentLocation} referencing the primary key {\tt deptName} in {\tt Department};
+\item {\tt sid} is a foreign key in {\tt studentMajor} referencing the primary key {\tt sid} in {\tt Student};
+\item {\tt major} is a foreign key in {\tt studentMajor} referencing the primary key {\tt major} in {\tt Major};
+\item {\tt sid1} is a foreign key in {\tt hasFriend} referencing the primary key {\tt sid} in {\tt Student}; and
+\item {\tt sid2} is a foreign key in {\tt hasFriend} referencing the primary key {\tt sid} in {\tt Student};
+
+\end{itemize}
+
+
+The data for the assignment is included in the \blue{{\tt Assignment1Script.sql}}
+and 
+in the \blue{{\tt Assignment1Script.py}}.
+
+\begin{remark}
+We will typically use the primary key of an object to specify that object.
+This should not cause any confusion since an object can be referenced uniquely with its primary key value.
+E.g., we will write `\emph{$\ldots$ student $s$ $\ldots$ }' rather than `\emph{$\ldots$ the student with sid $s$ $\ldots$}'.   When posing a query, we may write `\emph{Find each student who $\ldots$}' instead of 
+`\emph{Find the sid of each student who $\ldots$}'.   The expected answer for such a query should be the set of sids of students who meet the criteria of the query. 
+\end{remark}
+
+
+
+\newpage
+\section{Database creation and impact of constraints on insert and delete statements.}
+
+Create a database in PostgreSQL that stores the data provided in the \blue{{\tt Assignment1Script.sql}}
+file.
+Make sure to specify primary and foreign keys.
+
+\begin{enumerate}
+\item \bluebullet\ Provide 4 conceptually different examples that illustrate how the presence or absence of primary and
+  foreign keys affect insert and deletes in these relations.\footnote{Consider the lecture notes about keys, foreign keys, and inserts and deletes.}
+  
+  To solve this problem,
+  you will need to experiment with the  relation schemas and instances for this assignment.   
+  For example
+  
+ \begin{itemize}
+  \item you may consider altering primary keys and foreign key constraints and
+  then consider various sequences of insert and delete operations; or
+  \item you may consider changing the given
+  relation instances to observe the desired effects.
+ \end{itemize}
+
+  
+  The SQL code that corresponds  to each of these four examples should be included in the \blue{{\tt assignment1.sql}} file (even though it may generate error conditions.)   You can also put comments in this that discuss your examples.   Nothing about this problem should go into the \blue{{\tt assignment1.pdf}} file. 
+  
+  
+  \end{enumerate}
+ \newpage
+  \section{Expressing queries in SQL and Python}\label{SQLQueries}
+
+\begin{remark}
+For this assignment,  you are required to 
+use  tuple variables in your SQL statements.\footnote{In later assignments, we will drop that requirement.  Still it is important to realize the distinction between a relation name and a tuple variable name in a query.}    
+For example, in formulating the query ``Find the sid and sname of each student who lives in Bloomington" you should write the query
+
+\begin{center}{\tt
+\begin{tabular}{ll}
+SELECT &s.sid, s.sname\\
+FROM & Student s\\
+WHERE & s.homeCity = `Bloomington'
+\end{tabular}}
+\end{center}
+rather than
+\begin{center}{\tt
+\begin{tabular}{ll}
+SELECT &sid, sname\\
+FROM & Student\\
+WHERE & homeCity = `Bloomington' 
+\end{tabular}}
+\end{center}
+\end{remark}
+
+Write SQL and Python statements for the following queries.   
+
+You can {\bf not} use the SQL JOIN operations or SQL aggregate functions
+such as {\tt COUNT}, {\tt SUM}, {\tt MAX}, {\tt MIN}, etc in your solutions.
+\begin{enumerate}[resume]
+
+\item \bluebullet\ Find each pair $(d, m)$ where $d$ is the name of a department and $m$ is a major of 
+a student who is employed by that department and who earns a salary of at least 20000.
+
+
+\item \bluebullet\ Find each pair $(s_1,s_2)$ of sids of different students who have the same (set of) friends who work for the CS department.
+
+
+
+\item \bluebullet\ Find each major for which there exists a student with that major and who does not only have friends who also have that major.
+
+
+\item  \redbullet\ Find the sid, sname of each student who (a) has home city Bloomington, 
+(b) works for a department where he or she earns a salary that is higher than 20000, and (c) has at least one friend.
+\item  \redbullet\ Find the pairs $(d_1, d_2)$ of names of different departments whose main offices are located in the same building.
+
+\item  \redbullet\ Find the sid and sname of each student whose home city is different than those of his or her friends.
+\item  \redbullet\ Find each major that is the major of at most 2 students.
+\item  \redbullet\ Find the sid, sname, and salary of each student who has at least two friends such that these friends have a common major but provided that it is not the `Mathematics' major.
+\item  \redbullet\ Find the deptName of each department that not only employs students                                                                      
+whose home city is Indianapolis. 
+(In other words, there exists at least one student who is employed by such a department
+whose home city is not Indianapolis.)
+\item  \redbullet\ For each department, list its name along with the highest salary made by students who are employed by it.
+\item  \redbullet\ Find the sid and sname of each student $s$ who is employed by a department $d$ and who has a salary that is strictly higher than the salary of each of his or her friends who is employed
+by that department $d$.  (Student $s$ should only be considered if indeed he or she has a friend who is employed by department $d$.)
+
+\end{enumerate}
+
+\newpage
+\section{Translating safe TRC queries to SQL and Python}
+
+
+The problems in this section require expressing safe TRC queries as equivalent SQL and Python queries.
+\begin{example}\label{translateTRC}
+Consider the query which lists for each department, those students who earn the highest salary in that department.   This query can be expressed in safe TRC as
+{\small
+\[
+\begin{array}{ll}
+\{(w_1.deptName, w_1.sid)\mid employedBy(w_1) \land \\
+\qquad\qquad \forall w_2\in employeedBy(w_1.deptName = w_2.deptName  \rightarrow w_1.salary \geq w_2.salary)\}.
+\end{array}
+\]
+%
+Observe that this query contains a universal quantifier `$\forall$' which, in SQL, is most directly translated 
+as `$\mathtt{true = all}$'.   For the above safe TRC query, we therefore get in SQL the query
+\begin{verbatim}
+select w1.deptName, w1.sid
+from   employedBy w1
+where  true = all (select w1.salary >= w2.salary
+                   from   employedBy w2
+                   where  w1.deptName = w2.deptName);
+\end{verbatim}
+
+And, we get the Python query
+\begin{verbatim}
+[{'deptName': w1['deptName'], 'sid': w1['sid']}
+  for w1 in employedBy 
+  if all [w1['salary'] >= w2['salary']
+          for w2 in employedBy 
+          if  w1.deptName == w2.deptName])]
+\end{verbatim}
+}
+
+\noindent
+Because a conditional `$F_1 \rightarrow F_2$' is logically equivalent with the disjunction 
+`$\lnot F_1\,\lor\, F_2$', the above query can also be expressed in safe TRC as
+{\small
+\[
+\begin{array}{ll}
+\{(w_1.deptName, w_1.sid)\mid employedBy(w_1) \land \\
+\qquad\qquad \forall w_2\in employeedBy(\lnot(w_1.deptName = w_2.deptName)  \lor w_1.salary \geq w_2.salary)\}.
+\end{array}
+\]
+or
+{\small
+\[
+\begin{array}{ll}
+\{(w_1.deptName, w_1.sid, w_1.salary)\mid employedBy(w_1) \land \\
+\qquad\qquad \forall w_2\in employeedBy(w_1.deptName \neq w_2.deptName \lor w_1.salary \geq w_2.salary)\}.
+\end{array}
+\]
+}
+%
+Therefore, in SQL, this query can be also expressed as 
+\begin{verbatim}
+select w1.deptName, w1.sid
+from   employedBy w1
+where  true = all (select w1.deptName <> w2.deptName or w1.salary >= w2.salary
+                   from   employedBy w2);
+\end{verbatim}
+
+And, in Python
+\begin{verbatim}
+[{'deptName': w1['deptName'], 'sid': w1['sid']}
+  for w1 in employedBy 
+  if all([w1['deptName'] != w2['deptName'] or w1['salary'] >= w2['salary']
+          for w2 in employedBy])]
+\end{verbatim}          
+
+}
+
+
+Using the logically equivalency of `$\forall x F_1\rightarrow F_2$' and `$\lnot\exists x F_1\land \lnot F_2$', the above query can also
+be expressed in safe TRC as 
+{\small
+\[
+\begin{array}{ll}
+\{(w_1.deptName, w_1.sid)\mid employedBy(w_1) \land \\
+\qquad\qquad \lnot \exists w_2\in employeedBy(w_1.deptName = w_2.deptName  \land w_1.salary < w_2.salary)\}.
+\end{array}
+\]
+}
+%
+Observe that this query contains a existential quantifier `$\exists$' which, in SQL, is most directly translated 
+as `$\mathtt{true = some}$'.  We therefore get in SQL the query
+{\small
+\begin{verbatim}
+select w1.deptName, w1.sid
+from   employedBy w1
+where  not true = some (select w1.deptName = w2.deptName and w1.salary < w2.salary
+                        from   employedBy w2);
+\end{verbatim}
+}
+
+And, in Python
+\begin{verbatim}
+[{'deptName': w1['deptName'], 'sid': w1['sid']}
+  for w1 in employedBy 
+  if not any([w1['deptName'] == w2['deptName'] and w1['salary'] < w2['salary']
+          for w2 in employedBy])]
+\end{verbatim}    
+
+%
+
+\noindent
+Alternatively, to express a safe TRC existential quantifier, we can use the SQL `$\mathtt{exists}$' set predicate and get the SQL query
+{\small
+\begin{verbatim}
+select w1.deptName, w1.sid
+from   employedBy w1
+where  not exists (select 1
+                   from   employedBy w2
+                   where  w1.deptName = w2.deptName and w1.salary < w2.salary);
+\end{verbatim}
+}
+
+If we define the following Python `$\text{exists}$' function, we can also express this query
+in Python in a similar way as we did above for SQL.
+
+{\small
+\begin{verbatim}
+def exists(R): return R != []
+
+[{'deptName': w1['deptName'], 'sid': w1['sid']}
+  for w1 in employedBy 
+  if not exists ([1
+                  for w2 in employedBy
+                  if w1['deptName'] == w2['deptName'] and w1['salary'] < w2['salary']])]
+\end{verbatim}
+}
+
+
+\end{example}
+
+
+
+
+Consider the following queries expressed in safe TRC.   Translate each of these queries in three conceptually 
+different ways as an equivalent SQL queries and as an equivalent Python queries.    Consult Example~\ref{translateTRC} as a guide to solve these problems.
+
+\newpage
+\begin{enumerate}[resume]
+
+\item  \bluebullet\ 
+{\tiny
+\[
+\begin{array}{ll}
+\{(s_1.sid, s_1.sname)\mid Student(s_1) \land \\
+\quad \exists d \in Department\,\exists w \in employedBy (d.deptName = w.deptName \land s_1.sid = w.sid \land d.mainOffice = \mathtt{LuddyHall} \land \\
+\quad \quad \exists s_2 \in Student
+(hasFriend(s_1.sid,s_2.sid) \land s_2.homeCity \neq \mathtt{Bloomington}))\}.
+\end{array}
+\]
+}
+
+\item \bluebullet\ 
+{\tiny
+\[
+\begin{array}{ll}
+\{s_1.sid \mid Student(s_1) \land 
+\forall s_2\in Student(s_2)\ (hasFriend(s_1.sid,s_2.sid) \rightarrow \\
+\qquad\exists sm_1\in studentMajor\,\exists sm_2\in studentMajor
+(sm_1.sid = s_1.sid \land sm_2.sid = s_2.sid \land sm_1.major = sm_2.major \land sm_1.sid \neq sm_2.sid))\}.
+\end{array}
+\]
+}
+
+
+
+
+\item  \bluebullet\ 
+{\tiny
+\[
+\begin{array}{ll}
+\{(s_1.sid,s_2.sid)\mid Student(s_1) \land Student(s_2) \land s_1.sid \neq s_2.sid\land \\
+\qquad\qquad\forall f_1\in hasFriend(s_1.sid1 = f_1.sid1 \rightarrow\exists f_2\in hasFriend (f_2.sid1 = s_2.sid\land
+f_1.sid2 = f_2.sid2))\}.
+\end{array}
+\]
+}
+
+
+
+
+
+
+
+
+
+
+\item  \redbullet\ 
+{\small
+\[
+\begin{array}{ll}
+\{s.sid, s.sname, w.deptName, w.salary\mid Student(s) \land employedBy(w)\land s.sid = w.sid\\
+\qquad s.homeCity = \mathtt{`Bloomington'}\, \land\, 10000 \leq w.salary\, \land\, w.deptName \neq \mathtt{`Mathematics'}\}.
+\end{array}
+\]
+}
+
+
+\item  \redbullet\ 
+
+{\tiny
+\[
+\begin{array}{ll}
+\{s.sid, s.sname\mid Student(s) \land \\
+\quad \exists d\in Department\, \exists w\in employedBy (d.deptName = w.deptName \land s.sid = w.sid \land d.mainOffice = \mathtt{`LuddyHall'} \land \\
+\quad \quad \exists f\in hasFriend\, \exists s_1\in Student (f.sid1 = s.sid \land f.sid2 = s_1.sid \land s_1.homeCity \neq \mathtt{`Bloomington'}))\}.
+\end{array}
+\]
+}
+
+\item  \redbullet\ 
+
+{\small
+\[
+\begin{array}{ll}
+\{m.major\mid Major(m) \land \lnot (\exists s\in Student\, \exists sm\in studentMajor (s.sid = sm.sid\land \\
+\qquad sm.major = m.major \land s.homeCity = \mbox{`Bloomington'})\}.
+\end{array}
+\]
+}
+
+\item  \redbullet\ 
+
+{\small
+\[
+\begin{array}{ll}
+\{s.sid, s.sname\mid Student(s) \land \\
+\qquad \forall f\in hasFriend(f.sid2 = s.sid \rightarrow 
+\exists s_1\in Student (f.sid1 = s_1.sid \land s.homeCity = s_1.homeCity))\}
+\end{array}
+\]
+}
+
+\end{enumerate}
+\newpage
+\section{Formulating queries in the safe Tuple Relational Calculus}
+
+\begin{enumerate}[resume]
+\item Express each of the queries in problems 2, 3, and 4
+in Section~\ref{SQLQueries} as safe TRC queries.
+The solutions of these problems should be included in the {\tt assignment1.pdf} file.
+
+\begin{enumerate}
+\item \bluebullet (Problem 2) Find each pair $(d, m)$ where $d$ is the name of a department and $m$ is a major of 
+a student who is employed by that department and who earns a salary of at least 20000.
+
+
+\item \bluebullet (Problem 3) Find each pair $(s_1,s_2)$ of sids of different students who have the same (set of) friends who work for the CS department.
+
+
+
+\item \bluebullet (Problem 4) Find each major for which there exists a student with that major and who does not only have friends who also have that major.
+
+
+
+\end{enumerate}
+
+\item Formulate each of the queries in problems 5, 7, 9, and 11 in Section~\ref{SQLQueries} as safe TRC queries.
+
+\begin{enumerate}[resume]
+\item \redbullet\ (Problem 5) Find the sid, sname of each student who (a) has home city Bloomington, 
+(b) works for a department where he or she earns a salary that is higher than 20000, and (c) has at least one friend.
+
+\item \redbullet\ (Problem 7) Find the sid and sname of each student whose home city is different than those of his or her friends.
+
+\item \redbullet\ (Problem 9) Find the sid, sname, and salary of each student who has at least two friends such that these friends have a common major but provided that it is not the `Mathematics' major.
+
+
+
+\item \redbullet\ (Problem 11) For each department, list its name along with the highest salary made by students who are employed by it.
+
+
+\end{enumerate}
+\end{enumerate}
+\newpage
+
+\section{Formulating constraints in the safe Tuple Relational Calculus and as boolean SQL and Python queries}
+
+Formulate the following constraints in safe TRC and as boolean SQL and Python queries.    
+
+The safe TRC solutions of these problems should be included in the {\tt assignment1.pdf} file and
+the SQL solutions should be included in the {\tt assignment1-SQL.sql} file.
+The Python solutions should be included in the {\tt assignment1-Python.py} file.
+
+Here is an example of what is expected for your answers.
+
+\begin{example}
+Consider the constraint ``\emph{Each major is the major of a student.}''
+In safe TRC, this constraint can be formulated as follows:
+$$
+\begin{array}{l}
+\forall m\ Major(n) \rightarrow \exists sm\, (studentMajor(sm) \land sm.major = m.major)
+\end{array}
+$$
+This constraint can be specified using the following boolean SQL query.
+\begin{verbatim}
+select true = all (select true = some (select sm.major = m.major
+                                       from   studentMajor sm)
+                   from   Major m);                    
+\end{verbatim}
+And, in Python
+\begin{verbatim}
+all([any([sm['major'] == m['major']
+          for m in studentMajor])
+     for m in Major])
+\end{verbatim}
+Alternatively, the constraint can be formulated in safe TRC as
+$$
+\begin{array}{l}
+\lnot \exists m (Major(m) \land \lnot \exists sm (studentMajor(sm) \land sm.major = m.major)).
+\end{array}
+$$
+This constraint can be specified using the following boolean SQL query:
+
+\begin{verbatim}
+select not true = some (select not true = some (select sm.major = m.major
+                                                from   studentMajor sm)
+                        from   Major m);
+\end{verbatim}
+And, in Python
+\begin{verbatim}
+not any([not any([sm['major'] == m['major']
+                  for sm in studentMajor])
+         for m in Major])
+\end{verbatim}
+
+Alternatively, in SQL
+\begin{verbatim}
+select not exists (select 1
+      	      	     from	  Major	m
+      	      	     where  not exists (select 1
+      	      	      	      	          from   studentMajor sm
+      	      	      	      	          where  sm.major = m.major));
+\end{verbatim}
+
+If we use the Python `$\text{exists}$' defined in Example~\ref{translateTRC}, we
+can express this boolean query in Python as follows
+
+\begin{verbatim}
+not exists ([1
+      	     for m in Major	m
+      	     if not exists ([1
+      	      	      	     sm in studentMajor
+      	      	      	     if sm['major'] == m['major']])])
+\end{verbatim}
+
+
+\end{example}
+
+
+\begin{enumerate}[resume]
+
+
+\item Consider the constraint ``\emph{Some major has fewer than 2 students with that major}."
+\begin{enumerate}
+\item \bluebullet\ Formulate this constraint in safe TRC.
+
+\item \bluebullet\ Formulate this constraint as a boolean SQL query.
+
+\item \bluebullet\ Formulate this constraint as a boolean Python query.
+
+
+\end{enumerate}
+
+
+\item Consider the constraint ``\emph{Each student who works for a department has a friend who also works for that department and who earns the same salary}."
+\begin{enumerate}
+\item \bluebullet\ Formulate this constraint in safe TRC.
+
+
+
+\item \bluebullet\ Formulate this constraint as a boolean SQL query.
+
+\item \bluebullet\ Formulate this constraint as a boolean Python query.
+
+\end{enumerate}
+
+
+\item Consider the constraint ``\emph{All students working in a same department share a major and earn the same salary}."
+\begin{enumerate}
+\item \bluebullet\ Formulate this constraint in safe TRC.
+
+
+
+\item \bluebullet\ Formulate this constraint as a boolean SQL query.
+
+\item \bluebullet\ Formulate this constraint as a boolean Python query.
+
+\end{enumerate}
+
+
+
+
+
+\item Consider the constraint ``\emph{Each student is employed by a department and has at least two majors}."
+\begin{enumerate}
+\item \redbullet\ Formulate this constraint in safe TRC.
+\item \redbullet\ Formulate this constraint as a boolean SQL query.
+\item \redbullet\ Formulate this constraint as a boolean Python query.
+\end{enumerate}
+
+\item  Consider the constraint ``\emph{Each student and his or her friends work for the same department}."
+\begin{enumerate}
+\item \redbullet\ Formulate this constraint in safe TRC.
+\item \redbullet\ Formulate this constraint as a boolean SQL query.
+\item \redbullet\ Formulate this constraint as a boolean Python query.
+\end{enumerate}
+
+\item  Consider the constraint ``\emph{Some employed student has a salary that is strictly higher than the salary of each of his or her employed friends}."
+\begin{enumerate}
+\item \redbullet\ Formulate this constraint in safe TRC.
+\item \redbullet\ Formulate this constraint as a boolean SQL query.
+\item \redbullet\ Formulate this constraint as a boolean Python query.
+\end{enumerate}
+
+\end{enumerate}
+\newpage
+\section{Theoretical Problem about Safe Tuple Relational Calculus}
+
+\begin{enumerate}[resume]
+\item \redbullet\ Prove that each query expressed in safe TRC can be computed in finite time.
+\item \redbullet\ Prove that each constraint expressed in safe TRC can be computed in finite time.
+\end{enumerate}
+
+\end{document}

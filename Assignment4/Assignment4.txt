@@ -1,0 +1,134 @@
+CREATE DATABASE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+Problem 2
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 2
+INSERT 0 1
+After inserting values to company table
+ cname  |    city     
+--------+-------------
+ Apple  | Bloomington
+ Amazon | Chicago
+ Apple  | NewYork
+(3 rows)
+
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+After inserting values to worksfor table
+ pid  | cname 
+------+-------
+ 1001 | Apple
+(1 row)
+
+CREATE FUNCTION
+CREATE TRIGGER
+After deleting values to company table, which also impact the worksfor
+ pid  | cname 
+------+-------
+ 1001 | Apple
+(1 row)
+
+Question4
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 6
+INSERT 0 4
+INSERT 0 5
+INSERT 0 11
+Problem 4a
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+Problem 4b -Testcase
+INSERT 0 0
+Course table after an enroll and waitlist
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1006 |   4
+(3 rows)
+
+ sid  | cno | position 
+------+-----+----------
+ 1003 |   4 |        1
+(1 row)
+
+Problem 4c
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 0
+INSERT 0 0
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1006 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+(6 rows)
+
+ sid  | cno | position 
+------+-----+----------
+ 1003 |   4 |        1
+ 1004 |   2 |        1
+ 1004 |   4 |        2
+(3 rows)
+
+Execute delete for sid 1006 and cno =4 
+DELETE 1
+After deleting the sid =1006, the waitlist position for sid 1003 is vanished and added to the enroll table as there was vacant postion
+ sid  | cno | position 
+------+-----+----------
+ 1004 |   2 |        1
+ 1004 |   4 |        2
+(2 rows)
+
+ sid  | cno 
+------+-----
+ 1002 |   3
+ 1005 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+ 1003 |   4
+(6 rows)
+
+Delete the course no =3 and sid =1002, should only update the total in course, as this course still has some vacancy in the enrollment
+DELETE 1
+After deleting the sid =1002, the course  and enroll table look like this
+ sid  | cno 
+------+-----
+ 1005 |   4
+ 1003 |   2
+ 1005 |   2
+ 1006 |   2
+ 1003 |   4
+(5 rows)
+
+ cno |    cname     | total | max 
+-----+--------------+-------+-----
+   1 | AML          |     0 |   5
+   2 | Usability    |     3 |   3
+   4 | CN           |     2 |   2
+   3 | DeepLearning |     0 |   4
+(4 rows)
+
+DROP DATABASE
