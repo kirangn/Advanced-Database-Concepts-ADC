@@ -1,2 +1,2 @@
 # Advanced-Database-Concepts-ADC
- ADC Projects 
+A set of assignments completed during the masters program
